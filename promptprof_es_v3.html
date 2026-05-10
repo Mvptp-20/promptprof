@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROMPT PROFESSOR — Auditor y Optimizador de Prompts</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf8f4;
+    --surface: #ffffff;
+    --surface2: #f3f0ea;
+    --border: #e2ddd5;
+    --ink: #1c1917;
+    --muted: #78716c;
+    --accent: #c2410c;
+    --accent2: #ea580c;
+    --gold: #b45309;
+    --green: #15803d;
+    --red: #b91c1c;
+    --amber: #b45309;
+    --rule: #e2ddd5;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+  }
+
+  /* Subtle paper texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 48px 0 32px;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 40px;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 2.2rem;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .logo span {
+    color: var(--accent);
+  }
+
+  .edition-badge {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: 1.5px solid var(--ink);
+    padding: 4px 10px;
+    color: var(--ink);
+    margin-top: 4px;
+  }
+
+  .header-sub {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* ── WELCOME CARD ── */
+  .welcome-card {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 24px 28px;
+    margin-bottom: 32px;
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .welcome-card::before {
+    content: '"';
+    position: absolute;
+    right: 20px;
+    top: -10px;
+    font-family: 'Playfair Display', serif;
+    font-size: 8rem;
+    color: rgba(255,255,255,0.06);
+    line-height: 1;
+  }
+
+  .welcome-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 10px;
+  }
+
+  .welcome-text {
+    font-size: 0.78rem;
+    line-height: 1.75;
+    color: rgba(250,248,244,0.85);
+    max-width: 580px;
+  }
+
+  .welcome-rules {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .rule-item {
+    font-size: 0.68rem;
+    color: rgba(250,248,244,0.65);
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .rule-dot {
+    color: var(--accent2);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ── MODE SELECTOR ── */
+  .mode-row {
+    display: flex;
+    gap: 0;
+    margin-bottom: 24px;
+    border: 1.5px solid var(--ink);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .mode-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-right: 1.5px solid var(--ink);
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 10px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .mode-btn:last-child { border-right: none; }
+
+  .mode-btn.active {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .mode-btn:hover:not(.active) {
+    background: var(--surface2);
+    color: var(--ink);
+  }
+
+  /* ── INPUT AREA ── */
+  .input-section {
+    margin-bottom: 24px;
+  }
+
+  .input-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .char-count {
+    font-size: 0.6rem;
+    color: var(--muted);
+  }
+
+  .prompt-textarea {
+    width: 100%;
+    min-height: 140px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 2px;
+    color: var(--ink);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    padding: 16px 18px;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .prompt-textarea::placeholder {
+    color: #c0bbb4;
+    font-style: italic;
+  }
+
+  .prompt-textarea:focus {
+    border-color: var(--ink);
+  }
+
+  .submit-btn {
+    width: 100%;
+    background: var(--accent);
+    color: white;
+    border: none;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 14px 24px;
+    border-radius: 2px;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  .submit-btn:hover { background: var(--accent2); }
+  .submit-btn:active { transform: scale(0.995); }
+  .submit-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+
+  /* ── CONVERSATION ── */
+  .conversation {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+
+  /* User bubble */
+  .msg-user {
+    align-self: flex-end;
+    max-width: 80%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 14px 18px;
+    font-size: 0.8rem;
+    line-height: 1.65;
+    color: var(--ink);
+    animation: slideRight 0.3s ease;
+  }
+
+  @keyframes slideRight {
+    from { opacity: 0; transform: translateX(12px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .msg-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  /* Professor response */
+  .msg-prof {
+    align-self: flex-start;
+    max-width: 100%;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 2px;
+    padding: 20px 24px;
+    animation: slideLeft 0.3s ease;
+    position: relative;
+  }
+
+  @keyframes slideLeft {
+    from { opacity: 0; transform: translateX(-12px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .msg-prof::before {
+    content: 'PROFESSOR PROMPT AUDIT';
+    display: block;
+    font-size: 0.58rem;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+
+  /* Rejection message */
+  .msg-rejected {
+    align-self: flex-start;
+    max-width: 100%;
+    background: #fff5f5;
+    border: 1.5px solid var(--red);
+    border-radius: 2px;
+    padding: 16px 20px;
+    animation: slideLeft 0.3s ease;
+  }
+
+  .msg-rejected::before {
+    content: '❌ REJECTED';
+    display: block;
+    font-size: 0.58rem;
+    letter-spacing: 0.15em;
+    color: var(--red);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  /* Score display */
+  .score-display {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .score-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--ink);
+  }
+
+  .score-number.low { color: var(--red); }
+  .score-number.mid { color: var(--amber); }
+  .score-number.high { color: var(--green); }
+
+  .score-denom {
+    font-size: 1rem;
+    color: var(--muted);
+  }
+
+  .score-bars {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .score-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .score-bar-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    width: 60px;
+    flex-shrink: 0;
+  }
+
+  .score-bar-track {
+    flex: 1;
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--ink);
+    transition: width 0.8s ease;
+  }
+
+  .score-bar-val {
+    font-size: 0.6rem;
+    color: var(--muted);
+    width: 28px;
+    text-align: right;
+  }
+
+  /* Feedback sections */
+  .feedback-section {
+    margin-bottom: 14px;
+  }
+
+  .feedback-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .feedback-label.strength { color: var(--green); }
+  .feedback-label.weakness { color: var(--red); }
+  .feedback-label.rewrite  { color: var(--gold); }
+  .feedback-label.next     { color: var(--accent); }
+
+  .feedback-text {
+    font-size: 0.78rem;
+    line-height: 1.7;
+    color: var(--ink);
+  }
+
+  .rewrite-box {
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 2px;
+    padding: 12px 14px;
+    font-size: 0.76rem;
+    line-height: 1.65;
+    color: var(--ink);
+    font-style: italic;
+    margin-top: 6px;
+  }
+
+  /* Perfect score */
+  .perfect-banner {
+    background: var(--green);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 2px;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-top: 14px;
+    font-weight: 500;
+  }
+
+  /* Thinking state */
+  .thinking {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  .thinking-dots span {
+    display: inline-block;
+    width: 5px; height: 5px;
+    background: var(--muted);
+    border-radius: 50%;
+    margin: 0 2px;
+    animation: dot 1.2s infinite;
+  }
+
+  .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes dot {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+
+  /* History */
+  .iteration-count {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+    padding: 8px;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 20px;
+  }
+
+  /* Reset */
+  .reset-row {
+    text-align: center;
+    margin-top: 8px;
+  }
+
+  .reset-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .reset-btn:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+
+  /* Footer */
+  footer {
+    border-top: 2px solid var(--ink);
+    padding: 20px 0 32px;
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-left {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .footer-right {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  @media (max-width: 600px) {
+    .welcome-rules { grid-template-columns: 1fr; }
+    .mode-btn { font-size: 0.58rem; padding: 8px 4px; }
+    .score-display { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-top">
+      <div class="logo">PROMPT<span>PROF</span></div>
+      <div class="edition-badge">Edición Auditoría</div>
+    </div>
+    <div class="header-sub">Un auditor estricto que te ayuda a que tus prompts sean mejores - no por ti, contigo.</div>
+  </header>
+
+  <!-- WELCOME -->
+  <div class="welcome-card">
+    <div class="welcome-title">// Cómo Funciona</div>
+    <div class="welcome-text">
+      Esto no es un generador de contenido. Somete un prompt que quieres mejorar y recibe una auditoría calificada con retroalimentación accionable. Repite hasta obtener un 10/10.
+    </div>
+    <div class="welcome-rules">
+      <div class="rule-item"><span class="rule-dot">▸</span> Presenta un prompt para ANÁLISIS — no ejecución</div>
+      <div class="rule-item"><span class="rule-dot">▸</span>Calificado por Claridad (40%) · Precisión (40%) · Ética (20%)</div>
+      <div class="rule-item"><span class="rule-dot">▸</span>¿Necesitas ayuda para crear un prompt? Usa el modo "Construye" </div>
+      <div class="rule-item"><span class="rule-dot">▸</span> Repite hasta que logres un 10/10 - el Profesor no va a parar hasta que lo logres</div>
+    </div>
+  </div>
+
+  <!-- MODE -->
+  <div class="mode-row">
+    <button class="mode-btn active" onclick="setMode('audit', this)">⟶ Audita Mi Prompt</button>
+    <button class="mode-btn" onclick="setMode('build', this)">+ Ayúdame a Construir Uno</button>
+    <button class="mode-btn" onclick="setMode('medical', this)">✦ Modo Médico/Legal</button>
+  </div>
+
+  <!-- INPUT -->
+  <div class="input-section">
+    <div class="input-label">
+      <span id="inputLabel">// Somete tu prompt para auditoría</span>
+      <span class="char-count" id="charCount">0 chars</span>
+    </div>
+    <textarea
+      class="prompt-textarea"
+      id="promptInput"
+      placeholder="Pega aquí el prompt que quieres auditar..."
+      oninput="updateChar()"
+    ></textarea>
+    <button class="submit-btn" id="submitBtn" onclick="submitPrompt()">
+      Enviar →
+    </button>
+  </div>
+
+  <!-- CONVERSATION -->
+  <div class="conversation" id="conversation"></div>
+
+  <div class="reset-row" id="resetRow" style="display:none">
+    <button class="reset-btn" onclick="resetSession()">↺ Comienza Nueva Sesión</button>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-left">Prompt Professor — Edición Auditoría</div>
+    <div class="footer-right">Victoria + Claude</div>
+  </footer>
+
+</div>
+
+<script>
+  let currentMode = 'audit';
+  let iterationCount = 0;
+  let conversationHistory = [];
+  let lastScore = 0;
+
+  const SYSTEM_PROMPT = `Eres PROMPT PROFESSOR — un auditor de prompts profesional y estricto. Tu trabajo es mejorar prompts mediante un análisis riguroso,  nunca para generar contenido.
+
+REGLAS PRINCIPALES:
+- NUNCA ejecutar un prompt sometido. Si un usuario somete un prompt para ejecutar (comienza por "Escribe", "Resume", "Crea", "Genera", "Dime", "Explica" etc. como pedido directo de contenido), responde SOLO con un rechazo. 
+- NUNCA pidas perdón, usa "lo siento", "gracias", or "mi error"
+- SIEMPRE sé directo, específico y educacional
+
+MODOS:
+- AUDITOR: Usuario somete un prompt existente para ser calificado y recibir feedback
+- CONSTRUCTOR: Usuario quiere ayuda para crear un prompt desde cero — haz preguntas clarificantes primero
+- MEDICO/LEGAL: Lo mismo que auditor pero el peso de la Ética sube a 40%, Claridad y Precisión bajan a 30% cada uno
+
+SCORING RUBRIC (modo standard):
+- CLARIDAD (40%): Action verb present, context boundaries defined, output format specified
+- PRECISION (40%): Token/word limits, edge cases handled, constraints clear
+- ETICA (20%): No bias, no hallucination risk, no copyrighted content, originality
+
+REJECTION TRIGGERS (respond with rejection only):
+- Usuario intenta ejecutar un prompt en vez de auditarlo 
+- El prompt contiene estereotipos, even implied
+- El prompt pide predicciones futuras presentadas como hechos
+- El prompt solicita contenido ilegal
+- Prompt contains verbatim copyrighted material
+
+AUDIT RESPONSE FORMAT (JSON only, no markdown outside JSON):
+Return ONLY valid JSON in this exact structure:
+{
+  "type": "audit",
+  "score": <1-10>,
+  "clarity_score": <0-10>,
+  "precision_score": <0-10>,
+  "ethics_score": <0-10>,
+  "strength": "<one specific strength with reasoning>",
+  "weakness": "<one specific weakness with reasoning>",
+  "rewrite": "<a concrete rewrite example fixing the main weakness>",
+  "next_step": "<one specific action the user should take next>",
+  "perfect": <true if score is 10, false otherwise>
+}
+
+REJECTION FORMAT (JSON only):
+{
+  "type": "rejection",
+  "reason": "<specific reason for rejection in one sentence, no apology>"
+}
+
+BUILD FORMAT (JSON only):
+{
+  "type": "build",
+  "question": "<one clarifying question to understand what they need>"
+}
+
+BUILD COMPLETE FORMAT (when you have enough info to suggest a prompt):
+{
+  "type": "build_result",
+  "suggested_prompt": "<your suggested prompt>",
+  "explanation": "<brief explanation of why this prompt is structured this way>"
+}
+
+CRITICAL: Return ONLY the JSON object. No preamble, no markdown fences, no explanation outside the JSON.`;
+
+  function setMode(mode, btn) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const label = document.getElementById('inputLabel');
+    const placeholder = document.getElementById('promptInput');
+
+    if (mode === 'audit') {
+      label.textContent = '// Somete tu prompt para auditoría';
+      placeholder.placeholder = 'Pega el prompt que quieres auditar aquí...';
+    } else if (mode === 'build') {
+      label.textContent = '// Describe lo que quieres que el prompt haga';
+      placeholder.placeholder = 'Describe tu meta ideal o propósito — el Profesor hará preguntas y te ayudará a construirlo...';
+    } else {
+      label.textContent = '// Somete tu prompt médico o legal para auditoría (Ética: 40%)';
+      placeholder.placeholder = 'Pega tu prompt médico o legal aquí...';
+    }
+  }
+
+  function updateChar() {
+    const len = document.getElementById('promptInput').value.length;
+    document.getElementById('charCount').textContent = len + ' chars';
+  }
+
+  async function submitPrompt() {
+    const input = document.getElementById('promptInput').value.trim();
+    if (!input) return;
+
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('resetRow').style.display = 'block';
+
+    // Add user message
+    addUserMessage(input);
+    document.getElementById('promptInput').value = '';
+    updateChar();
+
+    // Add thinking indicator
+    const thinkingId = addThinking();
+
+    // Build message history
+    conversationHistory.push({ role: 'user', content: `MODE: ${currentMode.toUpperCase()}\n\n${input}` });
+
+    try {
+      const response = await fetch('https://kindredink-backend.onrender.com/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: SYSTEM_PROMPT,
+          messages: conversationHistory
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok || data.error) {
+        throw new Error(data.error?.message || data.error || 'API error: ' + response.status);
+      }
+      if (!data.content) {
+        throw new Error('Unexpected response: ' + JSON.stringify(data).slice(0, 200));
+      }
+      const raw = data.content.map(b => b.text || '').join('');
+
+      // Remove thinking
+      removeThinking(thinkingId);
+
+      // Parse response
+      const clean = raw.replace(/```json|```/g, '').trim();
+      const result = JSON.parse(clean);
+
+      // Add to history
+      conversationHistory.push({ role: 'assistant', content: raw });
+
+      // Render response
+      renderResponse(result);
+      iterationCount++;
+
+      if (iterationCount > 1) {
+        showIterationCount();
+      }
+
+    } catch (err) {
+      removeThinking(thinkingId);
+      addErrorMessage(err.message);
+      console.error(err);
+    }
+
+    document.getElementById('submitBtn').disabled = false;
+  }
+
+  function addUserMessage(text) {
+    const conv = document.getElementById('conversation');
+    const div = document.createElement('div');
+    div.className = 'msg-user';
+    div.innerHTML = `<div class="msg-label">Tú</div>${escapeHtml(text)}`;
+    conv.appendChild(div);
+    div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function addThinking() {
+    const conv = document.getElementById('conversation');
+    const id = 'thinking-' + Date.now();
+    const div = document.createElement('div');
+    div.className = 'thinking';
+    div.id = id;
+    div.innerHTML = `<div class="thinking-dots"><span></span><span></span><span></span></div> El Profesor está revisando...`;
+    conv.appendChild(div);
+    div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return id;
+  }
+
+  function removeThinking(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  }
+
+  function renderResponse(result) {
+    const conv = document.getElementById('conversation');
+    const div = document.createElement('div');
+
+    if (result.type === 'rejection') {
+      div.className = 'msg-rejected';
+      div.innerHTML = `<div class="feedback-text">${escapeHtml(result.reason)}</div>`;
+
+    } else if (result.type === 'build') {
+      div.className = 'msg-prof';
+      div.innerHTML = `
+        <div class="feedback-section">
+          <div class="feedback-label next">▸ Pregunta de Aclaración</div>
+          <div class="feedback-text">${escapeHtml(result.question)}</div>
+        </div>`;
+
+    } else if (result.type === 'build_result') {
+      div.className = 'msg-prof';
+      div.innerHTML = `
+        <div class="feedback-section">
+          <div class="feedback-label strength">✓ Prompt Sugerido</div>
+          <div class="rewrite-box">${escapeHtml(result.suggested_prompt)}</div>
+        </div>
+        <div class="feedback-section" style="margin-top:12px">
+          <div class="feedback-label next">▸ Por qué esta estructura</div>
+          <div class="feedback-text">${escapeHtml(result.explanation)}</div>
+        </div>
+        <div class="feedback-section" style="margin-top:12px; padding-top:12px; border-top:1px solid var(--rule)">
+          <div class="feedback-text" style="font-size:0.72rem; color:var(--muted)">Cambia al modo Auditoría y pega este prompt para calificarlo.</div>
+        </div>`;
+
+    } else if (result.type === 'audit') {
+      lastScore = result.score;
+      const scoreClass = result.score <= 4 ? 'low' : result.score <= 7 ? 'mid' : 'high';
+      const clarityPct  = (result.clarity_score / 10) * 100;
+      const precisionPct= (result.precision_score / 10) * 100;
+      const ethicsPct   = (result.ethics_score / 10) * 100;
+
+      div.className = 'msg-prof';
+      div.innerHTML = `
+        <div class="score-display">
+          <div>
+            <div class="score-number ${scoreClass}">${result.score}<span class="score-denom">/10</span></div>
+          </div>
+          <div class="score-bars">
+            <div class="score-bar-row">
+              <div class="score-bar-label">Claridad</div>
+              <div class="score-bar-track"><div class="score-bar-fill" style="width:${clarityPct}%"></div></div>
+              <div class="score-bar-val">${result.clarity_score}/10</div>
+            </div>
+            <div class="score-bar-row">
+              <div class="score-bar-label">Precisión</div>
+              <div class="score-bar-track"><div class="score-bar-fill" style="width:${precisionPct}%"></div></div>
+              <div class="score-bar-val">${result.precision_score}/10</div>
+            </div>
+            <div class="score-bar-row">
+              <div class="score-bar-label">Ética</div>
+              <div class="score-bar-track"><div class="score-bar-fill" style="width:${ethicsPct}%"></div></div>
+              <div class="score-bar-val">${result.ethics_score}/10</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feedback-section">
+          <div class="feedback-label strength">✓ Fortaleza</div>
+          <div class="feedback-text">${escapeHtml(result.strength)}</div>
+        </div>
+
+        <div class="feedback-section">
+          <div class="feedback-label weakness">✗ Debilidad</div>
+          <div class="feedback-text">${escapeHtml(result.weakness)}</div>
+        </div>
+
+        <div class="feedback-section">
+          <div class="feedback-label rewrite">↻ Reescritura Sugerida</div>
+          <div class="rewrite-box">${escapeHtml(result.rewrite)}</div>
+        </div>
+
+        <div class="feedback-section">
+          <div class="feedback-label next">▸ Próximo Paso</div>
+          <div class="feedback-text">${escapeHtml(result.next_step)}</div>
+        </div>
+
+        ${result.perfect ? '<div class="perfect-banner">🎓 Puntaje Perfecto — 10/10. Este prompt está listo para usar.</div>' : ''}
+      `;
+    }
+
+    conv.appendChild(div);
+    div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function showIterationCount() {
+    const conv = document.getElementById('conversation');
+    const div = document.createElement('div');
+    div.className = 'iteration-count';
+    div.textContent = `Iteración ${iterationCount} · Puntaje actual: ${lastScore}/10`;
+    conv.appendChild(div);
+  }
+
+  function addErrorMessage(msg) {
+    const conv = document.getElementById('conversation');
+    const div = document.createElement('div');
+    div.className = 'msg-rejected';
+    div.innerHTML = `<div class="feedback-text">Error del sistema: ${escapeHtml(msg)}</div>`;
+    conv.appendChild(div);
+  }
+
+  function resetSession() {
+    conversationHistory = [];
+    iterationCount = 0;
+    lastScore = 0;
+    document.getElementById('conversation').innerHTML = '';
+    document.getElementById('resetRow').style.display = 'none';
+    document.getElementById('promptInput').value = '';
+    updateChar();
+  }
+
+  function escapeHtml(text) {
+    return String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // Enter to submit (Shift+Enter for new line)
+  document.getElementById('promptInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      submitPrompt();
+    }
+  });
+</script>
+</body>
+</html>
