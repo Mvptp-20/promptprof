@@ -1,0 +1,23 @@
+[33mcommit 136f77b5e2919259e00f9b56fdd0d1a0c726bec6[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Victoria <your_email@example.com>
+Date:   Sat May 16 12:55:23 2026 -0400
+
+    Updated the html of both versions to fit brand, v5. Updated index files
+
+ promptprof_en_Post/index.html                      |  41 [32m+[m[31m-[m
+ .../promptprof_es.html                             |   0
+ .../promptprof_es.png                              | Bin
+ .../promptprof_es_v2.html                          |   0
+ .../promptprof_es_v2.png                           | Bin
+ .../promptprof_es_v3.html                          |   0
+ .../promptprof_es_v4.html                          |   0
+ promptprof_es/promptprof_es_v5.html                | 967 [32m+++++++++++++++++++++[m
+ promptprof_es_Post/index.html                      |  41 [32m+[m[31m-[m
+ promptprof.png => promptprom_en/promptprof.png     | Bin
+ .../promptprof_en.png                              | Bin
+ .../promptprof_fixed.html                          |   0
+ .../promptprof_fixed2.html                         |   0
+ .../promptprof_fixed_v3.html                       |   0
+ .../promptprof_fixed_v4.html                       |   0
+ promptprom_en/promptprof_fixed_v5.html             | 964 [32m++++++++++++++++++++[m
+ 16 files changed, 1985 insertions(+), 28 deletions(-)
