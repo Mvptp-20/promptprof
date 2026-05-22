@@ -11,8 +11,8 @@
     --surface: #ffffff;
     --surface2: #f3f0ea;
     --border: #e2ddd5;
-    --ink: #1c1917;
-    --muted: #78716c;
+    --ink: #2a2622;
+    --muted: #7d7268;
     --accent: #D7263D;
     --accent2: #e8344d;
     --gold: #b45309;
@@ -20,13 +20,18 @@
     --red: #b91c1c;
     --amber: #b45309;
     --rule: #e2ddd5;
+    --parchment:#f4efea;
+    --sand:#ebe3d7;
+    --henna:#963c2a;
+    --rose_madder:#c16a5b;
+    --charcoal:#4a4a4a;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    background: var(--bg);
-    color: var(--ink);
+    background: var(--parchment);
+    color: var(--sand);
     font-family: 'IBM Plex Mono', monospace;
     min-height: 100vh;
   }
@@ -64,7 +69,7 @@
 }
 
 .prompt-seal {
-  color: var(--red);
+  color: var(--rose_madder);
   margin-top: 14px;
 }
 
@@ -72,7 +77,7 @@
   header {
     position: relative;
     padding: 48px 0 32px;
-    border-bottom: 2px solid var(--ink);
+    border-bottom: 2px solid var(--rose_madder);
     margin-bottom: 40px;
   }
 
@@ -99,14 +104,14 @@
     font-family: 'Cinzel Decorative', serif;
     font-weight: 700;
     font-size: 5.5rem;
-    color: var(--accent);
+    color: var(--henna);
     line-height: 1;
   }
   .logo-rest {
     font-family: 'Cormorant Garamond', serif;
     font-weight: 500;
     font-size: 5.2rem;
-    color: var(--ink);
+    color: var(--charcoal);
     line-height: 1;
     text-transform: lowercase;
   }
@@ -115,9 +120,9 @@
     font-size: 0.6rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    border: 1.5px solid var(--ink);
+    border: 1.5px solid var(--charcoal);
     padding: 4px 10px;
-    color: var(--ink);
+    color: var(--charcoal);
     margin-top: 4px;
   }
 
@@ -125,14 +130,14 @@
     font-family: 'Playfair Display', serif;
     font-style: italic;
     font-size: 1rem;
-    color: var(--muted);
+    color: var(--charcoal);
     margin-top: 6px;
   }
 
   /* ── WELCOME CARD ── */
   .welcome-card {
-    background: var(--ink);
-    color: var(--bg);
+    background: var(--sand);
+    color: var(--parchment);
     padding: 24px 28px;
     margin-bottom: 32px;
     border-radius: 2px;
@@ -147,7 +152,7 @@
     top: -10px;
     font-family: 'Playfair Display', serif;
     font-size: 8rem;
-    color: rgba(255,255,255,0.06);
+    color: var(--parchment);
     line-height: 1;
   }
 
@@ -156,14 +161,14 @@
     font-size: 0.7rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--accent2);
+    color: var(--henna);
     margin-bottom: 10px;
   }
 
   .welcome-text {
     font-size: 0.78rem;
     line-height: 1.75;
-    color: rgba(250,248,244,0.85);
+    color: var(--ink);
     max-width: 580px;
   }
 
@@ -176,14 +181,14 @@
 
   .rule-item {
     font-size: 0.68rem;
-    color: rgba(250,248,244,0.65);
+    color: var(--charcoal);
     display: flex;
     gap: 8px;
     align-items: flex-start;
   }
 
   .rule-dot {
-    color: var(--accent2);
+    color: var(--henna);
     flex-shrink: 0;
     margin-top: 1px;
   }
@@ -193,7 +198,7 @@
     display: flex;
     gap: 0;
     margin-bottom: 24px;
-    border: 1.5px solid var(--ink);
+    border: 1.5px solid var(--charcoal);
     border-radius: 2px;
     overflow: hidden;
   }
@@ -202,8 +207,8 @@
     flex: 1;
     background: transparent;
     border: none;
-    border-right: 1.5px solid var(--ink);
-    color: var(--muted);
+    border-right: 1.5px solid var(--charcoal);
+    color: var(--charcoal);
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.68rem;
     letter-spacing: 0.1em;
@@ -217,13 +222,13 @@
   .mode-btn:last-child { border-right: none; }
 
   .mode-btn.active {
-    background: var(--ink);
-    color: var(--bg);
+    background: var(--sand);
+    color: var(--charcoal);
   }
 
   .mode-btn:hover:not(.active) {
-    background: var(--surface2);
-    color: var(--ink);
+    background: var(--sand);
+    color: var(--charcoal);
   }
 
   /* ── INPUT AREA ── */
@@ -235,7 +240,7 @@
     font-size: 0.62rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: var(--charcoal);
     margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
@@ -250,10 +255,10 @@
   .prompt-textarea {
     width: 100%;
     min-height: 140px;
-    background: var(--surface);
-    border: 1.5px solid var(--border);
+    background: var(--parchment);
+    border: 1.5px solid var(--);
     border-radius: 2px;
-    color: var(--ink);
+    color: var(--charcoal);
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.82rem;
     line-height: 1.7;
@@ -274,7 +279,7 @@
 
   .submit-btn {
     width: 100%;
-    background: var(--accent);
+    background: var(--henna);
     color: white;
     border: none;
     font-family: 'Syne', sans-serif;
@@ -289,7 +294,7 @@
     transition: background 0.2s, transform 0.1s;
   }
 
-  .submit-btn:hover { background: var(--accent2); }
+  .submit-btn:hover { background: var(--rose_madder); }
   .submit-btn:active { transform: scale(0.995); }
   .submit-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
 
@@ -305,7 +310,7 @@
   .msg-user {
     align-self: flex-end;
     max-width: 80%;
-    background: var(--surface2);
+    background: var(--sand);
     border: 1px solid var(--border);
     border-radius: 2px;
     padding: 14px 18px;
@@ -332,8 +337,8 @@
   .msg-prof {
     align-self: flex-start;
     max-width: 100%;
-    background: var(--surface);
-    border: 1.5px solid var(--ink);
+    background: var(--parchment);
+    border: 1.5px solid var(--charcoal);
     border-radius: 2px;
     padding: 20px 24px;
     animation: slideLeft 0.3s ease;
@@ -350,7 +355,7 @@
     display: block;
     font-size: 0.58rem;
     letter-spacing: 0.15em;
-    color: var(--accent);
+    color: var(--henna);
     margin-bottom: 14px;
     font-weight: 500;
   }
